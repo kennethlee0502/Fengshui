@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CHN 213风水八字小助手 Feng Shui Assistant</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background-color: #f6f6f6;
+        padding: 30px;
+        max-width: 600px;
+        margin: auto;
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      }
+      h2,
+      h3 {
+        text-align: center;
+      }
+      input,
+      button {
+        padding: 12px;
+        font-size: 16px;
+        width: 100%;
+        margin-top: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+
+      #loading {
+        text-align: center;
+        margin-top: 20px;
+      }
+      .spinner {
+        margin: auto;
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #4caf50;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      #result {
+        opacity: 0;
+        transition: opacity 0.8s ease-in;
+        margin-top: 20px;
+        background-color: white;
+        padding: 15px;
+        border-radius: 6px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        white-space: pre-wrap;
+      }
+      #result.visible {
+        opacity: 1;
+      }
+
+      footer {
+        margin-top: 40px;
+        padding: 15px;
+        text-align: center;
+        font-size: 14px;
+        color: #777;
+        border-top: 1px solid #ddd;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h2>🧧 CHN 213风水八字小助手 Feng Shui Assistant 🧧</h2>
+    <h3>输入你的生日，获取2025年（蛇年）的风水八字建议</h3>
+    <input type="date" id="birthdate" />
+    <button onclick="getFortune()">生成建议 Generate Fortune</button>
+
+    <div id="loading" style="display: none">
+      <div class="spinner"></div>
+    </div>
+
+    <div id="result"></div>
+
+    <footer>
+      ⚠️ 本程序仅供 CHN 213 作业参考，风水八字分析结果不应作为任何实际决策依据。
+    </footer>
+
+    <script>
+      async function getFortune() {
+        const date = document.getElementById("birthdate").value;
+        const resultDiv = document.getElementById("result");
+        const loading = document.getElementById("loading");
+
+        if (!date) {
+          resultDiv.innerText =
+            "⚠️ 请输入你的出生日期 Please enter your birthdate.";
+          resultDiv.classList.remove("visible");
+          return;
+        }
+
+        resultDiv.innerText = "";
+        resultDiv.classList.remove("visible");
+        loading.style.display = "block";
+
+        try {
+          const response = await fetch(
+            "https://cool-snow-9807.kennethlee0502.workers.dev",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ birthdate: date }),
+            }
+          );
+
+          const data = await response.json();
+          const message =
+            data.choices?.[0]?.message?.content ||
+            "❌ 无法生成建议，请稍后再试。";
+
+          resultDiv.innerText = message;
+          resultDiv.classList.add("visible");
+        } catch (error) {
+          resultDiv.innerText = "❌ 请求出错，请检查网络或API Key。";
+          resultDiv.classList.add("visible");
+        } finally {
+          loading.style.display = "none";
+        }
+      }
+    </script>
+  </body>
+</html>
