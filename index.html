@@ -13,42 +13,59 @@
         border-radius: 12px;
         box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
       }
+
       h2,
       h3 {
         text-align: center;
       }
-      input,
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .input-group input {
+        padding: 12px;
+        font-size: 16px;
+        width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-sizing: border-box;
+      }
+
       button {
         padding: 12px;
         font-size: 16px;
         width: 100%;
-        margin-top: 10px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-      }
-      button {
-        background-color: #4caf50;
-        color: white;
+        margin-top: 16px;
         border: none;
+        border-radius: 6px;
+        background-color: #d7000f;
+        color: white;
         cursor: pointer;
       }
+
       button:hover {
-        background-color: #45a049;
+        background-color: #b5000c;
       }
 
       #loading {
         text-align: center;
         margin-top: 20px;
       }
+
       .spinner {
-        margin: auto;
+        margin: 10px auto;
         border: 6px solid #f3f3f3;
-        border-top: 6px solid #4caf50;
+        border-top: 6px solid #d7000f;
         border-radius: 50%;
         width: 40px;
         height: 40px;
         animation: spin 1s linear infinite;
       }
+
       @keyframes spin {
         0% {
           transform: rotate(0deg);
@@ -56,6 +73,19 @@
         100% {
           transform: rotate(360deg);
         }
+      }
+
+      #loading-img {
+        width: 100px;
+        margin-top: 10px;
+      }
+
+      #fortuneLine {
+        font-style: italic;
+        color: #444;
+        margin-top: 12px;
+        opacity: 1;
+        transition: opacity 0.5s ease;
       }
 
       #result {
@@ -68,6 +98,7 @@
         box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         white-space: pre-wrap;
       }
+
       #result.visible {
         opacity: 1;
       }
@@ -82,15 +113,20 @@
       }
     </style>
   </head>
-
   <body>
-    <h2>🧧 CHN 213风水八字小助手 Feng Shui Assistant 🧧</h2>
-    <h3>输入你的生日，获取2025年（蛇年）的风水八字建议</h3>
-    <input type="date" id="birthdate" />
+    <h2>🧧 CHN 213 风水八字小助手 Feng Shui Assistant 🧧</h2>
+    <h3>输入你的生日和时间，获取2025年（蛇年）的风水八字建议</h3>
+
+    <div class="input-group">
+      <input type="date" id="birthdate" />
+      <input type="time" id="birthtime" value="00:00" />
+    </div>
+
     <button onclick="getFortune()">生成建议 Generate Fortune</button>
 
     <div id="loading" style="display: none">
       <div class="spinner"></div>
+      <p id="fortuneLine"></p>
     </div>
 
     <div id="result"></div>
@@ -100,14 +136,63 @@
     </footer>
 
     <script>
+      const fortunes = [
+        "🌿 一命二运三风水，天时地利人和俱全。",
+        "🔥 五行皆旺，百事可图。",
+        "💧 水生万物，静则生慧。",
+        "⚔️ 金旺则思清，土旺则心稳。",
+        "📜 运来时不需急，运走时莫强求。",
+        "🧠 风水最早用于选墓地，后被延伸到住宅布局。",
+        "🐉 八字就像宇宙给你的出生密码。",
+        "😴 睡觉头朝北，据说能顺应地磁场，睡得更香？",
+        "🛏️ 床别靠窗，不然爱情和钱包都可能翻窗跑了。",
+        "🚽 卫生间在财位？恭喜你，钱财冲水而去。",
+        "📱 别在厕所刷手机，运气都卡在马桶里了。",
+        "🐱 猫喜欢待的地方，往往是气场最旺的地方。",
+        "🐢 龟养家中向外看，据说守财能力+100。",
+        "💸 八字弱水，钱包常常也水（空）了。",
+        "🎓 木太少？难怪你最近学不进去。",
+        "📦 杂物太多，气场堵塞，脑袋也容易乱糟糟。",
+        "🏠 门对窗，风水叫‘前进后出’，努力全白干～",
+        "📅 八字不是算命，是看你适合什么样的生活节奏。",
+        "🧧 别太认真，这只是娱乐八字助手，我们不收红包。",
+      ];
+
+      let fortuneIndex = 0;
+      let fortuneTimer;
+
+      window.addEventListener("DOMContentLoaded", () => {
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("birthdate").setAttribute("max", today);
+      });
+
+      function startFortuneLoading() {
+        const line = document.getElementById("fortuneLine");
+        fortuneIndex = Math.floor(Math.random() * fortunes.length);
+        line.innerText = fortunes[fortuneIndex];
+
+        fortuneTimer = setInterval(() => {
+          line.style.opacity = 0;
+          setTimeout(() => {
+            fortuneIndex = (fortuneIndex + 1) % fortunes.length;
+            line.innerText = fortunes[fortuneIndex];
+            line.style.opacity = 1;
+          }, 300);
+        }, 2500);
+      }
+
+      function stopFortuneLoading() {
+        clearInterval(fortuneTimer);
+      }
+
       async function getFortune() {
         const date = document.getElementById("birthdate").value;
+        const time = document.getElementById("birthtime").value;
         const resultDiv = document.getElementById("result");
         const loading = document.getElementById("loading");
 
-        if (!date) {
-          resultDiv.innerText =
-            "⚠️ 请输入你的出生日期 Please enter your birthdate.";
+        if (!date || !time) {
+          resultDiv.innerText = "⚠️ 请输入你的出生日期和时间。";
           resultDiv.classList.remove("visible");
           return;
         }
@@ -115,6 +200,7 @@
         resultDiv.innerText = "";
         resultDiv.classList.remove("visible");
         loading.style.display = "block";
+        startFortuneLoading();
 
         try {
           const response = await fetch(
@@ -122,7 +208,7 @@
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ birthdate: date }),
+              body: JSON.stringify({ birthdate: date, birthtime: time }),
             }
           );
 
@@ -137,6 +223,7 @@
           resultDiv.innerText = "❌ 请求出错，请检查网络或API Key。";
           resultDiv.classList.add("visible");
         } finally {
+          stopFortuneLoading();
           loading.style.display = "none";
         }
       }
